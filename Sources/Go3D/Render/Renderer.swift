@@ -112,9 +112,12 @@ final class Renderer {
 
         environment = try Self.makeCube(device, size: Self.environmentSize, levels: Self.levels(for: Self.environmentSize))
         irradiance = try Self.makeCube(device, size: Self.irradianceSize, levels: 1)
-        prefiltered = try Self.makeCube(device, size: Self.prefilteredSize, levels: Self.prefilteredLevels)
+        // A local, so that the closure below does not capture self before every member is set.
+        let prefilteredCube = try Self.makeCube(device, size: Self.prefilteredSize, levels: Self.prefilteredLevels)
+        prefiltered = prefilteredCube
         prefilteredViews = try (0..<Self.prefilteredLevels).map { level in
-            guard let view = prefiltered.makeTextureView(pixelFormat: .rgba16Float, textureType: .typeCube, levels: level..<level + 1, slices: 0..<6) else {
+            guard let view = prefilteredCube.makeTextureView(pixelFormat: .rgba16Float, textureType: .typeCube, levels: level..<level + 1,
+                                                             slices: 0..<6) else {
                 throw RenderError("The light probe's levels cannot be viewed.")
             }
             return view
